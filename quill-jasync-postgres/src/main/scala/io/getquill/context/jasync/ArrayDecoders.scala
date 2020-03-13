@@ -8,7 +8,9 @@ import io.getquill.PostgresJAsyncContext
 import io.getquill.context.sql.encoding.ArrayEncoding
 import io.getquill.util.Messages.fail
 import org.joda.time.{ DateTime => JodaDateTime, LocalDate => JodaLocalDate, LocalDateTime => JodaLocalDateTime }
+
 import scala.reflect.ClassTag
+import scala.collection.compat._
 import scala.collection.JavaConverters._
 
 trait ArrayDecoders extends ArrayEncoding {
@@ -33,7 +35,7 @@ trait ArrayDecoders extends ArrayEncoding {
     AsyncDecoder[Col](SqlTypes.ARRAY)(new BaseDecoder[Col] {
       def apply(index: Index, row: ResultRow): Col = row.get(index) match {
         case seq: util.ArrayList[_] =>
-          seq.asScala.foldLeft(bf()) {
+          seq.asScala.foldLeft(bf.newBuilder) {
             case (b, x: I) => b += mapper(x)
             case (_, x)    => fail(s"Array at index $index contains element of ${x.getClass.getCanonicalName}, but expected $iTag")
           }.result()
